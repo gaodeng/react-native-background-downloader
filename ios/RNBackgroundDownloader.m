@@ -15,7 +15,6 @@ static CompletionHandler storedCompletionHandler;
 
 @implementation RNBackgroundDownloader {
     NSURLSession *urlSession;
-    NSURLSessionConfiguration *sessionConfig;
     NSMutableDictionary<NSNumber *, RNBGDTaskConfig *> *taskToConfigMap;
     NSMutableDictionary<NSString *, NSURLSessionDownloadTask *> *idToTaskMap;
     NSMutableDictionary<NSString *, NSData *> *idToResumeDataMap;
@@ -64,7 +63,6 @@ RCT_EXPORT_MODULE();
         idToPercentMap = [[NSMutableDictionary alloc] init];
         NSString *bundleIdentifier = [[NSBundle mainBundle] bundleIdentifier];
         NSString *sessonIdentifier = [bundleIdentifier stringByAppendingString:@".backgrounddownloadtask"];
-        sessionConfig = [NSURLSessionConfiguration backgroundSessionConfigurationWithIdentifier:sessonIdentifier];
         progressReports = [[NSMutableDictionary alloc] init];
         lastProgressReport = [[NSDate alloc] init];
         sharedLock = [NSNumber numberWithInt:1];
@@ -74,6 +72,10 @@ RCT_EXPORT_MODULE();
 
 - (void)lazyInitSession {
     if (urlSession == nil) {
+        NSString *bundleIdentifier = [[NSBundle mainBundle] bundleIdentifier];
+        NSString *stringToAppend = [@".backgrounddownloadtask_" stringByAppendingString:[[NSUUID UUID] UUIDString]];
+        NSString *sessonIdentifier = [bundleIdentifier stringByAppendingString:stringToAppend];
+        NSURLSessionConfiguration *sessionConfig = [NSURLSessionConfiguration backgroundSessionConfigurationWithIdentifier:sessonIdentifier];
         urlSession = [NSURLSession sessionWithConfiguration:sessionConfig delegate:self delegateQueue:nil];
     }
 }
